@@ -39,4 +39,5 @@ export interface Grade {
 /** Ícones disponíveis em IconeSvg.vue. */
 export type NomeIcone =
   | 'imprimir' | 'enviar' | 'mais' | 'lixeira' | 'aviso' | 'ok' | 'prato' | 'copiar'
-  | 'engrenagem' | 'fechar' | 'olho' | 'github' | 'qrcode' | 'offline';
+  | 'engrenagem' | 'fechar' | 'olho' | 'github' | 'qrcode' | 'offline'
+  | 'instalar';

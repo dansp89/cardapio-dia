@@ -14,24 +14,29 @@ const emit = defineEmits<{
   imprimir: [];
 }>();
 
-// Nem todo navegador de celular renderiza PDF em <iframe>: alguns mostram
-// uma área em branco. Sem evento confiável para detectar isso, oferecemos
-// desde já o caminho alternativo de abrir em nova aba.
+// Chrome no Android não renderiza PDF embutido: mostra um cartão com o nome
+// do arquivo e um botão "Abrir". O iframe até dispara `load`, então esperar
+// pelo evento não detecta nada — `pdfViewerEnabled` responde de antemão.
+const exibeEmbutido = ref(true);
 const carregando = ref(true);
-const demorou = ref(false);
-let relogio: ReturnType<typeof setTimeout> | undefined;
 
 watch(() => props.url, u => {
-  clearTimeout(relogio);
-  demorou.value = false;
   if (!u) return;
   carregando.value = true;
-  // Se o iframe não carregar, o aparelho provavelmente não exibe PDF embutido.
-  relogio = setTimeout(() => { if (carregando.value) demorou.value = true; }, 3500);
+  exibeEmbutido.value = navigator.pdfViewerEnabled !== false;
 });
 
+// Um <a target="_blank"> clicado pelo próprio usuário passa pelo bloqueador
+// de pop-up, ao contrário de window.open() chamado por script.
 function abrirEmAba(): void {
-  if (props.url) window.open(props.url, '_blank');
+  if (!props.url) return;
+  const elo = document.createElement('a');
+  elo.href = props.url;
+  elo.target = '_blank';
+  elo.rel = 'noopener';
+  document.body.appendChild(elo);
+  elo.click();
+  elo.remove();
 }
 </script>
 
@@ -62,26 +67,44 @@ function abrirEmAba(): void {
         </div>
 
         <div class="relative flex-1 overflow-hidden">
+          <!-- Sem visualizador embutido, o iframe renderizaria um cartão
+               genérico do sistema; melhor oferecer a ação direta. -->
           <div
-            v-if="carregando"
-            class="absolute inset-0 flex flex-col items-center justify-center gap-3 px-8 text-center">
-            <p class="text-sm text-zinc-400">
-              {{ demorou ? 'Este aparelho não abre PDF dentro do app.' : 'Abrindo o PDF…' }}
-            </p>
-            <BotaoBase v-if="demorou" variante="secundario" @click="abrirEmAba">
-              <IconeSvg nome="olho" :tamanho="18" />
-              Abrir em nova aba
+            v-if="!exibeEmbutido"
+            class="flex h-full flex-col items-center justify-center gap-5 px-8 text-center">
+            <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-700 text-zinc-300">
+              <IconeSvg nome="imprimir" :tamanho="30" />
+            </div>
+            <div>
+              <p class="font-semibold text-zinc-100">Etiquetas prontas</p>
+              <p class="mx-auto mt-1 max-w-xs text-sm text-zinc-400">
+                Este navegador abre o PDF numa aba separada.
+              </p>
+            </div>
+            <BotaoBase variante="primario" tamanho="grande" @click="abrirEmAba">
+              <IconeSvg nome="olho" :tamanho="20" />
+              Abrir o PDF
             </BotaoBase>
           </div>
-          <!-- O type ajuda navegadores que decidem o visualizador pelo MIME. -->
-          <iframe
-            :src="url" title="Etiquetas em PDF" type="application/pdf"
-            class="relative h-full w-full border-0 bg-zinc-700"
-            @load="carregando = false"></iframe>
+
+          <template v-else>
+            <div
+              v-if="carregando"
+              class="absolute inset-0 flex items-center justify-center text-sm text-zinc-400">
+              Abrindo o PDF…
+            </div>
+            <iframe
+              :src="url" title="Etiquetas em PDF" type="application/pdf"
+              class="relative h-full w-full border-0 bg-zinc-700"
+              @load="carregando = false"></iframe>
+          </template>
         </div>
 
         <div class="flex items-stretch gap-2 bg-zinc-800 px-4 py-3 pb-segura">
+          <!-- Sem visualizador embutido o corpo do modal já traz "Abrir o
+               PDF"; repetir a ação aqui só ocuparia espaço. -->
           <BotaoBase
+            v-if="exibeEmbutido"
             variante="secundario" tamanho="grande"
             class="w-14 shrink-0 !px-0 sm:w-auto sm:!px-4"
             aria-label="Abrir o PDF numa aba do navegador"

@@ -16,7 +16,7 @@ import IconeSvg from './components/IconeSvg.vue';
 import ModalTamanho from './components/ModalTamanho.vue';
 import ModalPreview from './components/ModalPreview.vue';
 import ModalQrCode from './components/ModalQrCode.vue';
-import { observarConexao } from './lib/pwa';
+import { observarConexao, observarInstalacao, instalar, estaInstalado } from './lib/pwa';
 import { cardapioDemo } from './lib/demo';
 import type { Aviso, Tamanho } from './types';
 
@@ -42,6 +42,15 @@ const iconeUrl = new URL('icone.svg', document.baseURI).href;
 const qrLink = ref<string | null>(null);
 const online = ref(true);
 let pararDeObservar: (() => void) | undefined;
+let pararInstalacao: (() => void) | undefined;
+const podeInstalar = ref(false);
+
+async function instalarApp(): Promise<void> {
+  const aceitou = await instalar();
+  if (aceitou) {
+    aviso.value = { tom: 'ok', texto: 'App instalado. Ele abre agora pela tela de início.' };
+  }
+}
 
 function aplicarTamanho(novo: Tamanho): void {
   if (!definir(novo)) return;
@@ -58,9 +67,13 @@ onMounted(() => {
   nativo.value = podeCompartilhar();
   semHttps.value = contextoInseguro();
   pararDeObservar = observarConexao(v => { online.value = v; });
+  // Já instalado não precisa do convite.
+  if (!estaInstalado()) {
+    pararInstalacao = observarInstalacao(v => { podeInstalar.value = v; });
+  }
 });
 
-onUnmounted(() => pararDeObservar?.());
+onUnmounted(() => { pararDeObservar?.(); pararInstalacao?.(); });
 
 // O QR carrega o cardápio noutro aparelho sem depender de rede — útil quando
 // os aparelhos não estão na mesma conexão.
@@ -214,6 +227,21 @@ function confirmarLimpeza(): void {
             <IconeSvg nome="offline" :tamanho="14" />
             Offline
           </span>
+
+          <!-- O convite do navegador fica escondido no menu; este botão o
+               traz para a tela. Só aparece quando há convite pendente. -->
+          <button
+            v-if="podeInstalar"
+            type="button" aria-label="Instalar o aplicativo"
+            title="Instalar o aplicativo"
+            class="flex h-11 shrink-0 items-center gap-1.5 rounded-xl border border-zinc-900
+                   bg-zinc-900 px-3 text-sm font-semibold text-white shadow-sm transition
+                   hover:bg-zinc-800 active:scale-95 focus-visible:outline-none
+                   focus-visible:ring-2 focus-visible:ring-zinc-900"
+            @click="instalarApp">
+            <IconeSvg nome="instalar" :tamanho="18" />
+            <span class="hidden sm:inline">Instalar</span>
+          </button>
 
           <button
             type="button" aria-label="Configurar tamanho da etiqueta"

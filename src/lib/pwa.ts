@@ -1,5 +1,67 @@
 // Registro do service worker e estado da conexão.
 
+/**
+ * O Chrome guarda o evento de instalação e só o oferece pelo menu, que muita
+ * gente não encontra. Capturá-lo permite mostrar um botão no próprio app.
+ *
+ * Precisa ser registrado o quanto antes: o evento dispara logo no carregamento
+ * e não se repete.
+ */
+interface EventoInstalacao extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+let convite: EventoInstalacao | null = null;
+const ouvintes = new Set<(disponivel: boolean) => void>();
+
+function avisar(): void {
+  ouvintes.forEach(fn => fn(convite !== null));
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', evento => {
+    evento.preventDefault();   // impede o banner automático do navegador
+    convite = evento as EventoInstalacao;
+    avisar();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    convite = null;
+    avisar();
+  });
+}
+
+/** Já está rodando como app instalado? */
+export function estaInstalado(): boolean {
+  return window.matchMedia('(display-mode: standalone)').matches
+    // iOS usa uma propriedade própria, fora do padrão.
+    || (window.navigator as { standalone?: boolean }).standalone === true;
+}
+
+/** Observa se há convite de instalação disponível. */
+export function observarInstalacao(aoMudar: (disponivel: boolean) => void): () => void {
+  ouvintes.add(aoMudar);
+  aoMudar(convite !== null);
+  return () => { ouvintes.delete(aoMudar); };
+}
+
+/** Abre o diálogo de instalação. Devolve se o usuário aceitou. */
+export async function instalar(): Promise<boolean> {
+  if (!convite) return false;
+  try {
+    await convite.prompt();
+    const { outcome } = await convite.userChoice;
+    // O evento é de uso único; recusado, o navegador oferece de novo depois.
+    convite = null;
+    avisar();
+    return outcome === 'accepted';
+  } catch (erro) {
+    console.error('Falha ao abrir a instalação:', erro);
+    return false;
+  }
+}
+
 /** Registra o service worker; sem ele o app só não funciona offline. */
 export function registrarSw(): void {
   if (!('serviceWorker' in navigator)) return;
