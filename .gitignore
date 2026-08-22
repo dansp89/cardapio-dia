@@ -1,7 +1,14 @@
 node_modules/
 dist/
 *.local
+
+# Configuração local; o .env.example fica versionado como referência.
+.env
+.env.*
+!.env.example
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
 *.log
+logs/
+.pm2/

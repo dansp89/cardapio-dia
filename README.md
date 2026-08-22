@@ -64,16 +64,40 @@ cd cardapio-dia
 # instale as dependências
 bun install
 
+# opcional: ajuste portas e domínios
+cp .env.example .env
+
 # rode em modo de desenvolvimento
 bun run dev
 ```
 
-Abra <http://localhost:5173>.
+Abra <http://localhost:27382>. O dev server já escuta em `0.0.0.0`, então o
+endereço de rede aparece no terminal — é por ele que se acessa do celular.
 
-Para testar no celular, na mesma rede Wi-Fi:
+### Configuração (.env)
 
-```bash
-bun run dev --host
+Tudo é opcional; sem `.env` valem os padrões. Variáveis do ambiente têm
+precedência sobre o arquivo.
+
+| Variável | Padrão | Para que serve |
+|---|---|---|
+| `PORT` | `27381` | Porta do servidor de produção |
+| `HOST` | `0.0.0.0` | Interface do servidor de produção |
+| `VITE_DEV_PORT` | `27382` | Porta do dev server |
+| `VITE_DEV_HOST` | `0.0.0.0` | Interface do dev server |
+| `VITE_ALLOWED_HOSTS` | vazio | Domínios extras aceitos pelo dev server |
+
+As portas são altas de propósito: ficam fora das faixas usadas por serviços
+comuns e fora do range efêmero do Linux (32768–60999), que o sistema aloca
+sozinho para conexões de saída.
+
+`VITE_ALLOWED_HOSTS` só é necessário ao acessar o dev server por um domínio
+— `meuapp.local`, um túnel, um proxy. O Vite recusa `Host` desconhecido
+como proteção contra DNS rebinding; `localhost` e IPs da rede local já são
+aceitos por padrão. Vários domínios separados por vírgula:
+
+```
+VITE_ALLOWED_HOSTS=meuapp.local,dev.meudominio.com.br
 ```
 
 Outros comandos:
@@ -112,7 +136,62 @@ caracteres; acima disso o app avisa e sugere copiar o link.
 
 ## Publicando
 
-O build é estático: sirva o conteúdo de `dist/` em qualquer hospedagem.
+O build é estático — `dist/` pode ser servido de duas formas.
+
+### Com PM2
+
+Há um servidor mínimo (`server.mjs`, sem dependências) e a configuração do
+PM2 pronta. Útil quando não se quer instalar nem configurar Nginx.
+
+```bash
+# na VPS, com o repositório clonado
+bun install
+bun run build
+
+pm2 start ecosystem.config.cjs   # sobe o app
+pm2 save                          # grava a lista de processos
+pm2 startup                       # gera o comando para subir no boot
+```
+
+Comandos do dia a dia:
+
+| Comando | O que faz |
+|---|---|
+| `bun run pm2:start` | Sobe o app |
+| `bun run pm2:status` | Mostra o estado |
+| `bun run pm2:logs` | Acompanha os logs |
+| `bun run pm2:reload` | Recarrega sem derrubar |
+| `bun run pm2:restart` | Reinicia |
+| `bun run pm2:stop` | Para |
+| `bun run pm2:delete` | Remove do PM2 |
+| `bun run deploy` | Instala, compila e recarrega |
+
+A porta padrão é **27381**, definida no `.env`. O servidor já aplica os
+cabeçalhos de cache corretos: eterno para `/assets/` (nomes com hash),
+nenhum para `sw.js`, o manifesto e o HTML — sem isso a atualização nunca
+chegaria a quem já visitou.
+
+Para expor na internet com HTTPS, ponha um proxy reverso na frente:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name etiquetas.seudominio.com.br;
+
+    # ssl_certificate ... (use o certbot)
+
+    location / {
+        proxy_pass http://127.0.0.1:27381;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### Só com Nginx
+
+Mais eficiente para conteúdo estático, e dispensa processo Node:
 
 ```bash
 bun run build

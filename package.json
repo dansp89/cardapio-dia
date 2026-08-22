@@ -29,7 +29,17 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build && bun run scripts/gerar-sw.mjs",
     "preview": "vite preview",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "vue-tsc --noEmit",
+    "start": "node server.mjs",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:stop": "pm2 stop cardapio-dia",
+    "pm2:restart": "pm2 restart cardapio-dia",
+    "pm2:reload": "pm2 reload cardapio-dia",
+    "pm2:delete": "pm2 delete cardapio-dia",
+    "pm2:logs": "pm2 logs cardapio-dia",
+    "pm2:status": "pm2 status cardapio-dia",
+    "pm2:save": "pm2 save",
+    "deploy": "bun install --production=false && bun run build && pm2 reload ecosystem.config.cjs --update-env"
   },
   "dependencies": {
     "jspdf": "^2.5.2",
