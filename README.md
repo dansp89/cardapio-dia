@@ -40,6 +40,9 @@ funciona sem backend e nada é registrado em lugar nenhum.
   testar tamanho e recorte antes de valer.
 - **Repetir o último cardápio** — repõe os pratos da última impressão.
 - **Aviso de prato repetido** — compara ignorando acentos e maiúsculas.
+- **Padronizar o texto** — reescreve nome e descrição de todos os pratos de
+  uma vez: MAIÚSCULAS, minúsculas, Cada Palavra, Como frase, ou só limpar
+  espaços sobrando.
 - **Salva sozinho** — o cardápio fica no navegador; recarregar não perde nada.
 - **QR Code** — mostre na tela e outro aparelho lê o cardápio inteiro pela
   câmera, sem rede nenhuma no meio.
@@ -277,6 +280,7 @@ src/
     pdf.ts           layout do PDF, em milímetros
     link.ts          cardápio codificado na URL
     demo.ts          cardápio de exemplo
+    texto.ts         formatação de texto em lote
     id.ts            identificador com reserva para contexto sem HTTPS
   types.ts
 ```

@@ -1,6 +1,7 @@
 import { ref, computed, watch, type Ref, type ComputedRef } from 'vue';
 import { lerLink, limparHash } from '../lib/link';
 import type { Prato, Tamanho } from '../types';
+import { formatar, type Formato } from '../lib/texto';
 import { novoId } from '../lib/id';
 
 const CHAVE = 'etiquetas.cardapio';
@@ -48,6 +49,7 @@ export interface Cardapio {
   editar: (id: string, campo: 'nome' | 'descricao', valor: string) => void;
   limpar: () => void;
   substituir: (novos: Prato[]) => void;
+  formatarTextos: (campos: ('nome' | 'descricao')[], formato: Formato) => number;
   duplicado: (nome: string) => boolean;
   arquivar: () => void;
   repetirAnterior: () => number;
@@ -151,6 +153,25 @@ export function useCardapio(
     pratos.value = [];
   }
 
+  /**
+   * Aplica um formato aos campos escolhidos de todos os pratos.
+   * Devolve quantos textos mudaram de fato.
+   */
+  function formatarTextos(campos: ('nome' | 'descricao')[], formato: Formato): number {
+    let alterados = 0;
+    for (const prato of pratos.value) {
+      for (const campo of campos) {
+        const novo = formatar(prato[campo], formato);
+        if (novo && novo !== prato[campo]) {
+          prato[campo] = novo;
+          alterados += 1;
+        }
+      }
+    }
+    if (alterados) marcarComoLocal();
+    return alterados;
+  }
+
   /** Troca a lista inteira de uma vez (usado pelo cardápio de exemplo). */
   function substituir(novos: Prato[]): void {
     marcarComoLocal();
@@ -193,7 +214,7 @@ export function useCardapio(
 
   return {
     pratos, veioDeLink, total, folhas, vazio, temAnterior,
-    iniciar, adicionar, remover, editar, limpar, substituir,
+    iniciar, adicionar, remover, editar, limpar, substituir, formatarTextos,
     duplicado, arquivar, repetirAnterior,
   };
 }

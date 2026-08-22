@@ -5,6 +5,7 @@ import IconeSvg from './IconeSvg.vue';
 import { PREDEFINIDOS } from '../composables/useTamanho';
 import { calcularGrade, tamanhoValido, LIMITES } from '../lib/pdf';
 import type { Tamanho } from '../types';
+import { FORMATOS, formatar, type Formato } from '../lib/texto';
 
 const props = defineProps<{
   aberto: boolean;
@@ -17,7 +18,29 @@ const emit = defineEmits<{
   fechar: [];
   aplicar: [tamanho: Tamanho];
   demo: [tamanho: Tamanho, quantidade: number];
+  formatar: [campos: ('nome' | 'descricao')[], formato: Formato];
 }>();
+
+// Formatação em lote: quais campos e qual formato.
+const alvoNome = ref(true);
+const alvoDescricao = ref(true);
+const formatoEscolhido = ref<Formato>('titulo');
+
+const camposEscolhidos = computed(() => {
+  const campos: ('nome' | 'descricao')[] = [];
+  if (alvoNome.value) campos.push('nome');
+  if (alvoDescricao.value) campos.push('descricao');
+  return campos;
+});
+
+// Mostra o efeito num exemplo antes de mexer no cardápio inteiro.
+const exemploFormatado = computed(() =>
+  formatar('feijoada COMPLETA com couve', formatoEscolhido.value));
+
+function aplicarFormato(): void {
+  if (!camposEscolhidos.value.length) return;
+  emit('formatar', camposEscolhidos.value, formatoEscolhido.value);
+}
 
 // Em centímetros na interface: milímetro é unidade de quem desenha, não de
 // quem está decidindo o tamanho de uma etiqueta.
@@ -221,6 +244,61 @@ function gerarDemo(): void {
               Use medidas entre {{ limitesCm.min }} e {{ limitesCm.maxL }} cm de largura
               e {{ limitesCm.min }} a {{ limitesCm.maxA }} cm de altura.
             </span>
+          </div>
+
+          <div
+            v-if="totalAtual > 0"
+            class="mb-5 rounded-xl border border-zinc-200 p-4">
+            <p class="text-sm font-semibold text-zinc-700">Padronizar o texto</p>
+            <p class="mt-0.5 mb-3 text-sm text-zinc-500">
+              Reescreve os {{ totalAtual }}
+              {{ totalAtual === 1 ? 'prato' : 'pratos' }} da lista de uma vez.
+            </p>
+
+            <div class="mb-3 flex gap-4">
+              <label class="flex items-center gap-2 text-sm text-zinc-700">
+                <input
+                  v-model="alvoNome" type="checkbox"
+                  class="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
+                Nome
+              </label>
+              <label class="flex items-center gap-2 text-sm text-zinc-700">
+                <input
+                  v-model="alvoDescricao" type="checkbox"
+                  class="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
+                Descrição
+              </label>
+            </div>
+
+            <div class="mb-3 grid gap-1.5">
+              <label
+                v-for="opcao in FORMATOS" :key="opcao.valor"
+                :class="['flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 transition',
+                         formatoEscolhido === opcao.valor
+                           ? 'border-zinc-900 bg-zinc-900/5'
+                           : 'border-zinc-200 hover:bg-zinc-50']">
+                <input
+                  v-model="formatoEscolhido" type="radio" :value="opcao.valor"
+                  name="formato"
+                  class="h-4 w-4 border-zinc-300 text-zinc-900 focus:ring-zinc-900">
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-medium text-zinc-800">{{ opcao.rotulo }}</span>
+                  <span class="block truncate text-xs text-zinc-500">{{ opcao.exemplo }}</span>
+                </span>
+              </label>
+            </div>
+
+            <div class="mb-3 rounded-lg bg-zinc-50 px-3 py-2 text-xs">
+              <span class="text-zinc-400">exemplo: </span>
+              <span class="font-medium text-zinc-700">{{ exemploFormatado }}</span>
+            </div>
+
+            <BotaoBase
+              variante="secundario" class="w-full"
+              :disabled="!camposEscolhidos.length"
+              @click="aplicarFormato">
+              {{ camposEscolhidos.length ? 'Aplicar aos pratos' : 'Escolha nome ou descrição' }}
+            </BotaoBase>
           </div>
 
           <div class="mb-5 rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-4">

@@ -19,6 +19,7 @@ import ModalQrCode from './components/ModalQrCode.vue';
 import { observarConexao, observarInstalacao, instalar, estaInstalado } from './lib/pwa';
 import { cardapioDemo } from './lib/demo';
 import type { Aviso, Tamanho } from './types';
+import type { Formato } from './lib/texto';
 
 const { tamanho, grade, definir } = useTamanho();
 const porPagina = computed(() => grade.value.porPagina);
@@ -26,7 +27,7 @@ const porPagina = computed(() => grade.value.porPagina);
 // O link carrega o tamanho de quem o gerou: quem recebe imprime no formato
 // certo sem precisar configurar nada.
 const { pratos, veioDeLink, total, folhas, vazio, temAnterior,
-        iniciar, adicionar, remover, editar, limpar, substituir,
+        iniciar, adicionar, remover, editar, limpar, substituir, formatarTextos,
         duplicado, arquivar, repetirAnterior } = useCardapio(porPagina, definir);
 
 const aviso = ref<Aviso | null>(null);
@@ -165,6 +166,14 @@ function usarDemo(novo: Tamanho, quantidade: number): void {
            `${novo.largura / 10} × ${novo.altura / 10} cm. ` +
            'Toque em Ver para conferir sem baixar nada.',
   };
+}
+
+function aplicarFormato(campos: ('nome' | 'descricao')[], formato: Formato): void {
+  const n = formatarTextos(campos, formato);
+  configAberta.value = false;
+  aviso.value = n
+    ? { tom: 'ok', texto: `${n} ${n === 1 ? 'texto foi reescrito' : 'textos foram reescritos'}.` }
+    : { tom: 'atencao', texto: 'Os textos já estavam nesse formato.' };
 }
 
 function repetir(): void {
@@ -395,7 +404,8 @@ function confirmarLimpeza(): void {
 
       <ModalTamanho
         :aberto="configAberta" :tamanho="tamanho" :total-atual="total"
-        @fechar="configAberta = false" @aplicar="aplicarTamanho" @demo="usarDemo" />
+        @fechar="configAberta = false" @aplicar="aplicarTamanho" @demo="usarDemo"
+        @formatar="aplicarFormato" />
 
       <ModalPreview
         :url="previaUrl" :paginas="previaPaginas"
