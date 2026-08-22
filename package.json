@@ -1,0 +1,49 @@
+{
+  "name": "cardapio-dia",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "description": "Gera um PDF de etiquetas recortáveis com os pratos do dia. Sem backend: o cardápio viaja no próprio link.",
+  "license": "MIT",
+  "homepage": "https://github.com/dansp89/cardapio-dia#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dansp89/cardapio-dia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dansp89/cardapio-dia/issues"
+  },
+  "keywords": [
+    "cardapio",
+    "etiquetas",
+    "pdf",
+    "restaurante",
+    "cozinha",
+    "vue",
+    "tailwind",
+    "jspdf",
+    "a4",
+    "impressao"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build && bun run scripts/gerar-sw.mjs",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "jspdf": "^2.5.2",
+    "qrcode": "^1.5.4",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^26.2.0",
+    "@types/qrcode": "^1.5.6",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "tailwindcss": "^4.0.0",
+    "typescript": "5.7.3",
+    "vite": "^6.0.7",
+    "vue-tsc": "^3.3.11"
+  }
+}

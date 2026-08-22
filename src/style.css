@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Evita o zoom automático do iOS ao focar um campo (fontes abaixo de 16px). */
+input, textarea {
+  font-size: 16px;
+}
+
+/* Respeita a área segura de aparelhos com barra de gestos. */
+.pb-segura {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Visível apenas para leitores de tela. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

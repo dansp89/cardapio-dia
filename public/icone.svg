@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Cardápio do Dia">
+  <defs>
+    <linearGradient id="fundo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#27272a"/>
+      <stop offset="1" stop-color="#18181b"/>
+    </linearGradient>
+    <linearGradient id="brilho" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".14"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="114" fill="url(#fundo)"/>
+  <rect width="512" height="512" rx="114" fill="url(#brilho)"/>
+
+  <!-- Etiqueta ao fundo, levemente girada: sugere a pilha recortada. -->
+  <g transform="rotate(-8 256 256)" opacity=".28">
+    <rect x="104" y="150" width="304" height="130" rx="22" fill="#ffffff"/>
+  </g>
+
+  <!-- Etiqueta principal, com a moldura interna que o PDF desenha. -->
+  <g transform="rotate(-8 256 256)">
+    <rect x="96" y="212" width="320" height="138" rx="24" fill="#fafafa"/>
+    <rect x="116" y="232" width="280" height="98" rx="12"
+          fill="none" stroke="#d4d4d8" stroke-width="5"/>
+    <rect x="150" y="262" width="212" height="20" rx="10" fill="#27272a"/>
+    <rect x="192" y="296" width="128" height="12" rx="6" fill="#a1a1aa"/>
+  </g>
+
+  <!-- Linha pontilhada de corte, atravessando como a tesoura faria. -->
+  <path d="M52 402 L460 344" stroke="#f4f4f5" stroke-width="9"
+        stroke-linecap="round" stroke-dasharray="2 26" opacity=".85"/>
+</svg>
