@@ -5,14 +5,18 @@ import tailwindcss from '@tailwindcss/vite';
 // Porta fora das faixas comuns e do range efêmero do Linux (32768-60999),
 // para não esbarrar em outro serviço da máquina nem em portas que o sistema
 // aloca sozinho.
-const PORTA_PADRAO = 27382;
+const PORTA_DEV_PADRAO = 27382;
+const PORTA_PREVIEW_PADRAO = 27384;
 
 export default defineConfig(({ mode }) => {
   // '' como prefixo carrega todas as variáveis do .env, não só as VITE_*:
   // PORT e HOST são lidas aqui para o dev seguir o mesmo .env do servidor.
   const env = loadEnv(mode, process.cwd(), '');
 
-  const porta = Number(env.VITE_DEV_PORT) || PORTA_PADRAO;
+  const porta = Number(env.VITE_DEV_PORT) || PORTA_DEV_PADRAO;
+  // Porta própria, e não derivada da de dev: somar 1 tornava impossível
+  // escolher a porta do preview pelo .env.
+  const portaPreview = Number(env.VITE_PREVIEW_PORT) || PORTA_PREVIEW_PADRAO;
   const host = env.VITE_DEV_HOST || '0.0.0.0';
 
   // Lista separada por vírgula; vazia mantém o padrão do Vite.
@@ -33,7 +37,7 @@ export default defineConfig(({ mode }) => {
     },
 
     preview: {
-      port: porta + 1,
+      port: portaPreview,
       host,
       strictPort: true,
       ...(permitidos.length ? { allowedHosts: permitidos } : {}),

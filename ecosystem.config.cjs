@@ -19,6 +19,7 @@ function lerEnv() {
       const chave = limpa.slice(0, sinal).trim();
       // Aspas em volta do valor são opcionais e não fazem parte dele.
       const valor = limpa.slice(sinal + 1).trim().replace(/^["']|["']$/g, '');
+      // Chave sem valor equivale a não declarada: usa-se o padrão.
       if (valor) acc[chave] = valor;
       return acc;
     }, {});

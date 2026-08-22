@@ -26,9 +26,9 @@
     "impressao"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vue-tsc --noEmit && vite build && bun run scripts/gerar-sw.mjs",
-    "preview": "vite preview",
+    "preview": "vite preview --host",
     "typecheck": "vue-tsc --noEmit",
     "start": "node server.mjs",
     "pm2:start": "pm2 start ecosystem.config.cjs",

@@ -84,6 +84,7 @@ precedência sobre o arquivo.
 | `PORT` | `27381` | Porta do servidor de produção |
 | `HOST` | `0.0.0.0` | Interface do servidor de produção |
 | `VITE_DEV_PORT` | `27382` | Porta do dev server |
+| `VITE_PREVIEW_PORT` | `27384` | Porta do `bun run preview` |
 | `VITE_DEV_HOST` | `0.0.0.0` | Interface do dev server |
 | `VITE_ALLOWED_HOSTS` | vazio | Domínios extras aceitos pelo dev server |
 
@@ -105,8 +106,11 @@ Outros comandos:
 ```bash
 bun run typecheck   # checagem de tipos
 bun run build       # gera dist/ (roda typecheck antes)
-bun run preview     # serve o build local
+bun run preview     # serve o build já compilado, na porta 27384
 ```
+
+`dev` e `preview` já rodam com `--host`, então o endereço de rede aparece
+no terminal — é por ele que se acessa do celular na mesma Wi-Fi.
 
 ## PWA e uso offline
 

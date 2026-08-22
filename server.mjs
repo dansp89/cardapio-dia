@@ -8,6 +8,15 @@ import { extname, join, normalize, resolve } from 'node:path';
 
 const RAIZ = resolve(new URL('./dist', import.meta.url).pathname);
 
+// Uma variável presente mas vazia não é uma escolha: o loadEnvFile não
+// sobrescreve o que já está no ambiente, então `PORT=` deixaria o valor do
+// .env de fora e cairia no padrão sem avisar.
+for (const chave of ['PORT', 'HOST']) {
+  if (process.env[chave] !== undefined && process.env[chave].trim() === '') {
+    delete process.env[chave];
+  }
+}
+
 // Lê o .env quando existir; nativo desde o Node 20, sem dependência.
 try {
   process.loadEnvFile(new URL('./.env', import.meta.url).pathname);
